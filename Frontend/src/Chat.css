@@ -1,0 +1,140 @@
+.chatViewport {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-color: #555 transparent;
+}
+
+.chats {
+    width: min(100% - 48px, 760px);
+    margin: 0 auto;
+    padding: 38px 0 32px;
+}
+
+.welcomeState {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.welcomeMark,
+.assistantMark {
+    display: block;
+    flex: 0 0 auto;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.welcomeMark {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 18px;
+    font-size: 20px;
+}
+
+.welcomeState h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+}
+
+.welcomeState p {
+    margin: 12px 0 0;
+    color: #a5a5a5;
+    font-size: 0.95rem;
+}
+
+.messageRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 0 26px;
+    font-size: 0.96rem;
+    line-height: 1.7;
+}
+
+.userRow {
+    justify-content: flex-end;
+}
+
+.assistantRow {
+    justify-content: flex-start;
+}
+
+.assistantMark {
+    width: 30px;
+    height: 30px;
+    margin-top: 2px;
+    font-size: 14px;
+}
+
+.userMsg,
+.gptMsg {
+    max-width: min(78%, 620px);
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.userMsg {
+    padding: 11px 17px;
+    color: #f2f2f2;
+    background: #303030;
+    border: 1px solid #3a3a3a;
+    border-radius: 20px;
+}
+
+.gptMsg {
+    padding: 4px 0;
+    color: #e7e7e7;
+}
+
+.typingIndicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+}
+
+.typingIndicator span {
+    width: 6px;
+    height: 6px;
+    background: #a5a5a5;
+    border-radius: 50%;
+    animation: typingPulse 1s ease-in-out infinite;
+}
+
+.typingIndicator span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.typingIndicator span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes typingPulse {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (max-width: 600px) {
+    .chats {
+        width: calc(100% - 32px);
+        padding-top: 24px;
+    }
+
+    .messageRow {
+        gap: 10px;
+    }
+
+    .userMsg,
+    .gptMsg {
+        max-width: 88%;
+    }
+}
+
