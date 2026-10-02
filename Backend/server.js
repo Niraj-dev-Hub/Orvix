@@ -6,6 +6,7 @@ import getGroqAiResponse from './utils/Groqai.js';
 import mongoose from 'mongoose';
 import chatRoutes from './routes/chat.js';
 import bodyParser from 'body-parser';
+import { GoogleGenAI } from "@google/genai";
 
 
 

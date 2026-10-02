@@ -105,6 +105,12 @@
     margin: 0;
     padding: 0 8px;
     overflow: hidden auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.history::-webkit-scrollbar {
+    display: none;
 }
 
 .historyHeading {
@@ -123,6 +129,7 @@
 }
 
 .historyItem {
+    position: relative;
     display: flex;
     height: 38px;
     align-items: center;
@@ -205,6 +212,12 @@
     display: none;
 }
 
+.sidebar.isCollapsed .historyItem .fa-trash,
+.sidebar.isCollapsed .history li:hover .fa-trash {
+    display: none !important;
+    opacity: 0;
+}
+
 .sidebar.isCollapsed .newChatButton {
     justify-content: center;
     margin: 7px 8px 24px;
@@ -244,4 +257,29 @@
     .sidebar.isCollapsed .sidebarHeader {
         padding: 0 2px;
     }
+}
+
+.fa-trash {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    opacity: 0;
+    color: #d7d7d7;
+    pointer-events: none;
+}
+
+.history li:hover .fa-trash {
+    opacity: 1;
+    color: #fff;
+    pointer-events: auto;
+}
+
+.fa-trash:hover{
+    color: #ff4d4d !important;
+}
+
+
+.highlighted{
+    background-color: #262626;
 }

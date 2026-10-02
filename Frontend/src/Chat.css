@@ -94,6 +94,67 @@
     color: #e7e7e7;
 }
 
+.gptMsg p {
+    margin: 0 0 10px;
+}
+
+.gptMsg p:last-child {
+    margin-bottom: 0;
+}
+
+.gptMsg ol,
+.gptMsg ul {
+    margin: 6px 0 10px;
+    padding-left: 24px;
+}
+
+.gptMsg li {
+    padding-left: 3px;
+    margin: 2px 0;
+}
+
+.codeBlock {
+    position: relative;
+    margin: 12px 0 16px;
+}
+
+.codeBlock pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    background: #17191d;
+    border-left: 2px solid #7dd3c7;
+    border-radius: 3px;
+}
+
+.codeBlock pre code {
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.copyCodeButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    padding: 3px 6px;
+    color: #9da3ad;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.72rem;
+    opacity: 0.75;
+    transition: color 150ms ease, background 150ms ease, opacity 150ms ease;
+}
+
+.copyCodeButton:hover {
+    color: #f1f4f5;
+    background: #292d33;
+    opacity: 1;
+}
+
 .typingIndicator {
     display: flex;
     align-items: center;

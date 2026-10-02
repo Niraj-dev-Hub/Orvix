@@ -141,3 +141,29 @@
         font-size: 0.66rem;
     }
 }
+
+/* drop down css */
+
+.dropDownDiv{
+    position: absolute;
+    top: 60px;
+    right: 0px;
+    width: 200px;
+    background-color: #212121;
+    border: 1px solid #414141;
+    border-radius: 4px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    z-index: 1000;
+}
+
+.dropDownItems{
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropDownItems:hover{
+    background-color: #414141;
+}

@@ -4,9 +4,16 @@ import { MyContext } from "./Mycontext";
 import { useContext, useState } from "react";
 
 function ChatWindow() {
-  const { prompt, setPrompt, currThreadId, setPrevChat } =
-    useContext(MyContext);
+  const {
+    prompt,
+    setPrompt,
+    currThreadId,
+    setPrevChat,
+    setAllThreads,
+    setReply,
+  } = useContext(MyContext);
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // change afterwards
 
   const getReply = async () => {
     const message = prompt.trim();
@@ -14,7 +21,11 @@ function ChatWindow() {
 
     setLoading(true);
     setPrompt("");
-    setPrevChat((messages) => [...messages, { role: "user", content: message }]);
+    setReply(null);
+    setPrevChat((messages) => [
+      ...messages,
+      { role: "user", content: message },
+    ]);
 
     try {
       const response = await fetch("http://localhost:8080/api/chat", {
@@ -24,12 +35,35 @@ function ChatWindow() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Request failed");
-      setPrevChat((messages) => [...messages, { role: "assistant", content: result.reply }]);
+      setReply(result.reply);
+      setPrevChat((messages) => [
+        ...messages,
+        { role: "assistant", content: result.reply },
+      ]);
+      setAllThreads((threads) => {
+        const currentThread = threads.find(
+          (thread) => thread.threadId === currThreadId,
+        );
+        const updatedThread = {
+          ...currentThread,
+          threadId: currThreadId,
+          title: currentThread?.title || message,
+          updatedAt: new Date().toISOString(),
+        };
+
+        return [
+          updatedThread,
+          ...threads.filter((thread) => thread.threadId !== currThreadId),
+        ];
+      });
     } catch (err) {
       console.error(err);
       setPrevChat((messages) => [
         ...messages,
-        { role: "assistant", content: "I couldn't get a response. Please try again." },
+        {
+          role: "assistant",
+          content: "I couldn't get a response. Please try again.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -43,13 +77,22 @@ function ChatWindow() {
           Orvix
           <i className="fa-solid fa-chevron-down"></i>
         </span>
-        <div className="userIconDiv">
+        <div className="userIconDiv" onClick= {() => setIsOpen(!isOpen)}>
           <span className="userIcon">
             {" "}
             <i className="fa-solid fa-user"></i>{" "}
           </span>
         </div>
       </div>
+
+      {isOpen && (
+        <div className="dropDownDiv">
+          <div className="dropDownItems"> <i className="fa-solid fa-crown"></i> Upgrade Plan</div>
+          <div className="dropDownItems"><i className="fa-solid fa-gear"></i>Settings</div>
+          <div className="dropDownItems"><i className="fa-solid fa-right-from-bracket"></i>Log out</div>
+        </div>
+      )}
+
       <Chat loading={loading} />
 
       <form
@@ -69,7 +112,12 @@ function ChatWindow() {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={loading}
           />
-          <button className="sendButton" type="submit" disabled={!prompt.trim() || loading} aria-label="Send message">
+          <button
+            className="sendButton"
+            type="submit"
+            disabled={!prompt.trim() || loading}
+            aria-label="Send message"
+          >
             <span className="sendArrow" aria-hidden="true" />
           </button>
         </div>
