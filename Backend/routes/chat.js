@@ -4,7 +4,8 @@ import getGroqAiResponse from "../utils/Groqai.js";
 
 const router = express.Router();
 
-//test
+//testimport mongoose from "mongoose";
+
 
 router.post("/test", async (req, res) => {
   try {
