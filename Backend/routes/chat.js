@@ -60,6 +60,7 @@ router.post("/chat", protectRoute, async (req, res) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
+  let failureStage = "load_thread";
   try {
     const trimmedThreadId = threadId.trim();
     const trimmedMessage = message.trim();
@@ -84,16 +85,28 @@ router.post("/chat", protectRoute, async (req, res) => {
       thread.messages.push({ role: "user", content: trimmedMessage });
     }
 
+    failureStage = "generate_reply";
     const assistantReply = await getGeminiAiResponse(trimmedMessage);
     thread.messages.push({ role: "assistant", content: assistantReply });
     thread.updatedAt = new Date();
 
+    failureStage = "save_thread";
     await thread.save();
 
     return res.json({ reply: assistantReply });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "Failed" });
+    console.error("Chat request failed:", {
+      requestId: req.requestId,
+      stage: failureStage,
+      name: err.name,
+      message: err.message,
+      status: err.status,
+      code: err.code
+    });
+    return res.status(500).json({
+      error: "Chat request failed",
+      requestId: req.requestId
+    });
   }
 });
 

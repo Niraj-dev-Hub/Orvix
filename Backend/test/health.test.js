@@ -13,6 +13,7 @@ test("health endpoint reports when the database is not connected", async (t) => 
   const response = await fetch(`http://127.0.0.1:${server.address().port}/health`);
 
   assert.equal(response.status, 503);
+  assert.match(response.headers.get("x-request-id"), /^[\da-f-]{36}$/i);
   assert.deepEqual(await response.json(), {
     status: "not_ready",
     database: "disconnected"

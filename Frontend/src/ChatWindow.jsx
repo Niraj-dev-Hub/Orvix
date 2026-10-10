@@ -78,12 +78,34 @@ function ChatWindow({ onOpenSidebar }) {
         ];
       });
     } catch (err) {
-      console.error("Failed to send chat message:", err);
+      const status = err.response?.status;
+      const requestId = err.response?.data?.requestId
+        || err.response?.headers?.["x-request-id"];
+      console.error("Failed to send chat message:", {
+        status: status || "network error",
+        requestId,
+        message: err.message,
+        serverError: err.response?.data?.error
+      });
+
+      let errorMessage;
+      if (!status) {
+        errorMessage = "Couldn't reach the chat service. Check your connection and try again.";
+      } else if (status === 401) {
+        errorMessage = "Your session may have expired. Please sign in again.";
+      } else if (status === 429) {
+        errorMessage = "The AI service is busy or its quota is exhausted. Please try again later.";
+      } else if (status >= 500) {
+        errorMessage = `The chat service failed (${status}). Check the backend logs${requestId ? ` for request ${requestId}` : ""}.`;
+      } else {
+        errorMessage = `The chat request failed (${status}). Please try again.`;
+      }
+
       setPrevChat((messages) => [
         ...messages,
         {
           role: "assistant",
-          content: "I couldn't get a response. Please try again.",
+          content: errorMessage,
         },
       ]);
     } finally {
