@@ -12,27 +12,24 @@
    npm run dev
    ```
 
-2. Set `VITE_API_URL=http://localhost:8080/api` in `Frontend/.env` to use the
-   local backend, then start Vite:
+2. Start the frontend:
 
    ```sh
    cd Frontend
-   cp -n .env.example .env
    npm install
    npm run dev
    ```
 
+The Vite development server proxies `/api` requests to `http://localhost:8080`.
 The backend allows the Vite origin at `http://localhost:5173` by default.
-Set `CLIENT_URL` if the frontend runs at a different origin. Authentication
-uses an HTTP-only cookie, so frontend and backend requests must remain
-credentialed.
+Authentication uses an HTTP-only cookie.
 
 ## Production deployment
 
-Deploy the backend and frontend as separate services, or serve the frontend
-behind the backend's domain. Use Node.js 20.19+ or 22.12+ to build the frontend.
+Deploy the backend on Render and the frontend on Vercel. Use Node.js 20.19+ or
+22.12+ to build the frontend.
 
-Configure these backend environment variables in the hosting service:
+Configure these backend environment variables in Render:
 
 - `MONGO_URI`: production MongoDB connection string. Allow the backend host in
   the database network access rules.
@@ -41,21 +38,19 @@ Configure these backend environment variables in the hosting service:
 - `NODE_ENV=production`
 - `CLIENT_URL`: `https://orvix-sigma.vercel.app` (the exact HTTPS frontend
   origin, without a trailing slash or path).
-- `PORT`: set this only if the host does not provide it automatically.
+- `PORT`: set this only if Render does not provide it automatically.
 
-Set `VITE_API_URL=https://orvix-s014.onrender.com/api` in the frontend build
-environment. This is also the default API URL in the frontend source and
-`.env.example`. Vite embeds this value at build time, so rebuild after changing
-it. Publish the contents of `Frontend/dist` after running:
+The Vercel project uses `Frontend` as its root directory, with build command
+`npm ci && npm run build` and output directory `dist`. The checked-in
+`vercel.json` proxies `/api/*` requests to the Render API, so browser requests
+and authentication cookies use the Vercel site origin instead of relying on
+cross-site cookies.
 
-```sh
-cd Frontend
-npm ci
-npm run lint
-npm run build
-```
+Set the Vercel environment variable `VITE_API_URL` to `/api` in all deployment
+environments. This value is embedded at build time; redeploy after changing it.
+The frontend source and `.env.example` also default to `/api`.
 
-Install and start the backend with:
+Install and test the backend with:
 
 ```sh
 cd Backend
@@ -67,10 +62,7 @@ npm start
 The API exposes `GET /health` as a readiness check; it returns HTTP 200 only
 when MongoDB is connected. The service waits for MongoDB before listening and
 exits with an error if required configuration or the database connection is
-unavailable. Use HTTPS for both services so secure authentication cookies work.
-If the frontend and API are on unrelated sites, browsers may block
-cross-site cookies; hosting them on the same site (for example, sibling
-subdomains) avoids relying on third-party cookie support.
+unavailable. Use HTTPS for both services.
 
 Conversation history is private to the signed-in account, and the account
 menu's **Log out** action clears the session cookie.
