@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/useAuth";
 import { v1 as uuidv1 } from "uuid";
 
-function ChatWindow() {
+function ChatWindow({ onOpenSidebar }) {
   const {
     prompt,
     setPrompt,
@@ -94,6 +94,14 @@ function ChatWindow() {
   return (
     <div className="ChatWindow">
       <div className="navbar">
+        <button
+          className="mobileMenuButton"
+          type="button"
+          onClick={onOpenSidebar}
+          aria-label="Open chat history"
+        >
+          <i className="fa-solid fa-bars" aria-hidden="true" />
+        </button>
         <span className="orvix">
           Orvix
           <i className="fa-solid fa-chevron-down"></i>

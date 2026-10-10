@@ -1,9 +1,11 @@
 import './Chat.css';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { MyContext } from './Mycontext';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
+
+const EMPTY_MESSAGES = [];
 
 function MarkdownCode({ children, className, ...props }) {
   const [copied, setCopied] = useState(false);
@@ -33,10 +35,13 @@ function MarkdownCode({ children, className, ...props }) {
 }
 
 function Chat({ loading }) {
-  const { prevChat = [], reply } = useContext(MyContext);
-  const chats = Array.isArray(prevChat) ? prevChat : [];
+  const { prevChat, reply } = useContext(MyContext);
+  const chats = useMemo(
+    () => (Array.isArray(prevChat) ? prevChat : EMPTY_MESSAGES),
+    [prevChat],
+  );
   const viewportRef = useRef(null);
-  const [displayedReply, setDisplayedReply] = useState('');
+  const [animation, setAnimation] = useState({ content: '', source: null });
 
   const latestAssistantIndex = chats.reduce(
     (lastIndex, chat, index) => (chat.role === 'assistant' ? index : lastIndex),
@@ -44,25 +49,24 @@ function Chat({ loading }) {
   );
   const latestAssistantReply = chats[latestAssistantIndex]?.content || '';
   const shouldAnimate = !!reply && reply === latestAssistantReply;
+  const displayedReply = animation.source === latestAssistantReply
+    ? animation.content
+    : shouldAnimate
+      ? ''
+      : latestAssistantReply;
 
   useEffect(() => {
-    if (!latestAssistantReply) {
-      setDisplayedReply('');
-      return undefined;
-    }
-
-    if (!shouldAnimate) {
-      setDisplayedReply(latestAssistantReply);
-      return undefined;
-    }
+    if (!latestAssistantReply || !shouldAnimate) return undefined;
 
     const words = latestAssistantReply.match(/\S+(?:\s+|$)/g) || [];
     let wordIndex = 0;
-    setDisplayedReply('');
 
     const interval = window.setInterval(() => {
       wordIndex += 1;
-      setDisplayedReply(words.slice(0, wordIndex).join(''));
+      setAnimation({
+        source: latestAssistantReply,
+        content: words.slice(0, wordIndex).join(''),
+      });
 
       if (wordIndex >= words.length) {
         window.clearInterval(interval);

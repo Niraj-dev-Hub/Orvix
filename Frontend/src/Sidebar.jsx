@@ -5,7 +5,7 @@ import { v1 as uuidv1 } from "uuid";
 import api from "./api/axios";
 import { useAuth } from "./context/useAuth";
 
-function Sidebar() {
+function Sidebar({ isMobileOpen, onMobileClose }) {
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuth();
   const { allThreads = [], 
@@ -39,6 +39,17 @@ function Sidebar() {
     };
   }, [setAllThreads]);
 
+  useEffect(() => {
+    if (!isMobileOpen) return undefined;
+
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") onMobileClose();
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [isMobileOpen, onMobileClose]);
+
 
   const createNewThread = async () =>{
     try {
@@ -47,10 +58,7 @@ function Sidebar() {
       setReply(null);
       setCurrThreadId(uuidv1());
       setPrevChat([]);
-
-
-
-
+      onMobileClose();
     } catch (err) {
       console.error(err);
     }
@@ -64,6 +72,7 @@ function Sidebar() {
      setPrevChat(Array.isArray(res?.messages) ? res.messages : []);
      setNewChat(false);
      setReply(null);
+     onMobileClose();
 
     } catch(err){
       console.error("Failed to open conversation:", err);
@@ -94,12 +103,30 @@ function Sidebar() {
   }
 
   return (
-    <aside className={`sidebar${collapsed ? " isCollapsed" : ""}`} aria-label="Chat history">
+    <>
+    {isMobileOpen && (
+      <button
+        className="sidebarBackdrop"
+        type="button"
+        aria-label="Close chat history"
+        onClick={onMobileClose}
+      />
+    )}
+    <aside className={`sidebar${collapsed ? " isCollapsed" : ""}${isMobileOpen ? " isMobileOpen" : ""}`} aria-label="Chat history">
       <header className="sidebarHeader">
         <div className="sidebarBrand">
           <img src="/orvix-mark.svg" alt="" className="logo" />
           <span className="sidebarBrandText">Orvix</span>
         </div>
+        <button
+          className="sidebarIconButton mobileCloseButton"
+          type="button"
+          onClick={onMobileClose}
+          aria-label="Close sidebar"
+          title="Close sidebar"
+        >
+          <i className="fa-solid fa-xmark" />
+        </button>
         <button
           className="sidebarIconButton collapseButton"
           type="button"
@@ -129,22 +156,25 @@ function Sidebar() {
             <li
               className={`historyItem${thread.threadId === currThreadId ? " isSelected" : ""}`}
               key={thread.threadId}
-              title={thread.title}
-              onClick= { () => changeThread(thread.threadId)}
-
             >
-
-            
-
-
-              <i className="fa-regular fa-message" aria-hidden="true" />
-              <span>{thread.title}</span>
-                <i className="fa-solid fa-trash"
-                onClick= {(e) =>{
-                  e.stopPropagation();
-                  deleteThread(thread.threadId);
-                }}
-                ></i>
+              <button
+                className="historyOpenButton"
+                type="button"
+                title={thread.title}
+                onClick={() => changeThread(thread.threadId)}
+              >
+                <i className="fa-regular fa-message" aria-hidden="true" />
+                <span>{thread.title}</span>
+              </button>
+              <button
+                className="historyDeleteButton"
+                type="button"
+                aria-label={`Delete ${thread.title}`}
+                title={`Delete ${thread.title}`}
+                onClick={() => deleteThread(thread.threadId)}
+              >
+                <i className="fa-solid fa-trash" aria-hidden="true" />
+              </button>
             </li>
           ))}
         </ul>
@@ -157,6 +187,7 @@ function Sidebar() {
         <span className="profileName">{user?.username || user?.email}</span>
       </footer>
     </aside>
+    </>
   );
 }
 

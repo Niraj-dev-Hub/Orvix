@@ -65,6 +65,10 @@
     font-size: 15px;
 }
 
+.mobileCloseButton {
+    display: none;
+}
+
 .sidebarIconButton:hover,
 .newChatButton:hover {
     color: #fff;
@@ -145,7 +149,24 @@
     white-space: nowrap;
 }
 
-.historyItem i {
+.historyOpenButton {
+    display: flex;
+    min-width: 0;
+    height: 100%;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    overflow: hidden;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.historyOpenButton i {
     width: 16px;
     flex: 0 0 auto;
     color: #8e8e8e;
@@ -153,7 +174,7 @@
     text-align: center;
 }
 
-.historyItem span {
+.historyOpenButton span {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -206,14 +227,13 @@
 .sidebar.isCollapsed .sidebarBrandText,
 .sidebar.isCollapsed .newChatButton span,
 .sidebar.isCollapsed .historyHeading,
-.sidebar.isCollapsed .historyItem span,
+.sidebar.isCollapsed .historyOpenButton span,
 .sidebar.isCollapsed .profileName,
 .sidebar.isCollapsed .sidebarFooter > i {
     display: none;
 }
 
-.sidebar.isCollapsed .historyItem .fa-trash,
-.sidebar.isCollapsed .history li:hover .fa-trash {
+.sidebar.isCollapsed .historyDeleteButton {
     display: none !important;
     opacity: 0;
 }
@@ -233,6 +253,10 @@
     padding: 0;
 }
 
+.sidebar.isCollapsed .historyOpenButton {
+    justify-content: center;
+}
+
 .sidebar.isCollapsed .sidebarFooter {
     justify-content: center;
     margin: 8px 5px;
@@ -241,44 +265,141 @@
 
 @media (max-width: 600px) {
     .sidebar {
-        flex-basis: 220px;
-        width: 220px;
+        position: fixed;
+        z-index: 1101;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(84vw, 320px);
+        height: 100vh;
+        height: 100dvh;
+        flex: 0 0 auto;
+        transform: translateX(-100%);
+        visibility: hidden;
+        transition: transform 220ms ease, visibility 220ms;
+        box-shadow: 16px 0 40px rgba(0, 0, 0, 0.28);
     }
 
-    .sidebar.isCollapsed {
-        flex-basis: 64px;
-        width: 64px;
+    .sidebar.isMobileOpen {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform 220ms ease;
+    }
+
+    .sidebarBackdrop {
+        position: fixed;
+        z-index: 1100;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.58);
+        border: 0;
     }
 
     .sidebarHeader {
-        padding: 0 8px;
+        min-height: 64px;
+        padding: 0 14px;
+    }
+
+    .collapseButton {
+        display: none;
+    }
+
+    .mobileCloseButton {
+        display: grid;
+    }
+
+    .sidebar.isCollapsed,
+    .sidebar.isCollapsed.isMobileOpen {
+        width: min(84vw, 320px);
     }
 
     .sidebar.isCollapsed .sidebarHeader {
-        padding: 0 2px;
+        justify-content: space-between;
+        padding: 0 14px;
+    }
+
+    .sidebar.isCollapsed .sidebarBrandText,
+    .sidebar.isCollapsed .newChatButton span,
+    .sidebar.isCollapsed .historyHeading,
+    .sidebar.isCollapsed .historyOpenButton span,
+    .sidebar.isCollapsed .profileName {
+        display: initial;
+    }
+
+    .sidebar.isCollapsed .newChatButton {
+        justify-content: flex-start;
+        margin: 7px 12px 24px;
+        padding: 0 12px;
+    }
+
+    .sidebar.isCollapsed .historyItem {
+        justify-content: space-between;
+        padding: 0 10px;
+    }
+
+    .sidebar.isCollapsed .historyOpenButton {
+        justify-content: flex-start;
+    }
+
+    .sidebar.isCollapsed .historyDeleteButton {
+        display: grid !important;
+        opacity: 1;
+    }
+
+    .sidebar.isCollapsed .sidebarFooter {
+        justify-content: flex-start;
+        margin: 8px;
+        padding: 0 8px;
     }
 }
 
-.fa-trash {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    opacity: 0;
+.historyDeleteButton {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    margin: 0 -4px 0 0;
+    padding: 0;
     color: #d7d7d7;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.historyDeleteButton:hover {
+    color: #ff6b6b;
+    background: #343434;
+}
+
+.historyDeleteButton i {
+    font-size: 12px;
+}
+
+.historyItem:hover .historyDeleteButton,
+.historyItem:focus-within .historyDeleteButton {
+    opacity: 1;
+}
+
+.historyItem .historyDeleteButton {
     pointer-events: none;
 }
 
-.history li:hover .fa-trash {
-    opacity: 1;
-    color: #fff;
+.historyItem:hover .historyDeleteButton,
+.historyItem:focus-within .historyDeleteButton {
     pointer-events: auto;
 }
 
-.fa-trash:hover{
-    color: #ff4d4d !important;
+@media (max-width: 600px) {
+    .historyDeleteButton {
+        opacity: 1;
+        pointer-events: auto !important;
+    }
 }
-
 
 .highlighted{
     background-color: #262626;

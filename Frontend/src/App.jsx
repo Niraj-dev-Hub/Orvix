@@ -4,7 +4,7 @@ import { MyContext } from "./Mycontext.jsx";
 
 import "./App.css";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { v1 as uuidv1 } from "uuid";
 
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -14,6 +14,9 @@ import { useAuth } from "./context/useAuth";
 
 function App() {
   const { user, loading } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const openSidebar = useCallback(() => setIsSidebarOpen(true), []);
   const [prompt, setPrompt] = useState("");
   const [reply, setReply] = useState(null);
   const [currThreadId, setCurrThreadId] = useState(uuidv1());
@@ -60,8 +63,11 @@ function App() {
         element={user ? (
           <div className="main">
             <MyContext.Provider value={providerValues}>
-              <Sidebar />
-              <ChatWindow />
+              <Sidebar
+                isMobileOpen={isSidebarOpen}
+                onMobileClose={closeSidebar}
+              />
+              <ChatWindow onOpenSidebar={openSidebar} />
             </MyContext.Provider>
           </div>
         ) : <Navigate to="/auth" replace />}

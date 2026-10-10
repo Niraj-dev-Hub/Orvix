@@ -1,6 +1,6 @@
 import express from "express";
 import Thread from "../models/Thread.js";
-import getGroqAiResponse from "../utils/Groqai.js";
+import getGeminiAiResponse from "../utils/Gemini.js";
 import { protectRoute } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -84,7 +84,7 @@ router.post("/chat", protectRoute, async (req, res) => {
       thread.messages.push({ role: "user", content: trimmedMessage });
     }
 
-    const assistantReply = await getGroqAiResponse(trimmedMessage);
+    const assistantReply = await getGeminiAiResponse(trimmedMessage);
     thread.messages.push({ role: "assistant", content: assistantReply });
     thread.updatedAt = new Date();
 

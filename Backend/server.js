@@ -1,51 +1,36 @@
-import Groq from "groq-sdk";
-import dotenv from "dotenv";
-import express from 'express';
-import cors from 'cors';
-import getGroqAiResponse from './utils/Groqai.js';
+import "dotenv/config";
 import mongoose from 'mongoose';
-import chatRoutes from './routes/chat.js';
-import bodyParser from 'body-parser';
-import { GoogleGenAI } from "@google/genai";
-import authRoutes from "./routes/authRoutes.js";
-import cookieParser from "cookie-parser";
+import { app } from "./app.js";
+import { validateEnvironment } from "./config.js";
 
-
-
-dotenv.config();
-
-const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.use(express.json ());
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
-  credentials: true
-}));
+export async function startServer() {
+  validateEnvironment();
+  await mongoose.connect(process.env.MONGO_URI);
 
-app.use(cookieParser());
+  const server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 
+  const shutdown = () => {
+    server.close(async (error) => {
+      if (error) {
+        console.error("Error closing the HTTP server:", error);
+        process.exitCode = 1;
+      }
 
-app.use("/api", chatRoutes);
-app.use("/api/auth", authRoutes);
+      await mongoose.disconnect();
+    });
+  };
 
-app.listen(PORT, () =>{
-  console.log('Server is running on port ' + PORT);
-  connectDB();
+  process.once("SIGTERM", shutdown);
+  process.once("SIGINT", shutdown);
+
+  return server;
+}
+
+startServer().catch((error) => {
+  console.error("Failed to start Orvix API:", error);
+  process.exitCode = 1;
 });
-
-
-
-const mongoURI = process.env.MONGO_URI;
-
-const connectDB = async () =>{
-  try {
-     await mongoose.connect(mongoURI);
-     console.log("Database connected successfully");
-  } catch (err) {
-       console.error("Database connection error:", err); 
-       }
-
-
-};
-
