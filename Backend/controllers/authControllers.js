@@ -22,28 +22,39 @@ const generateToken = (userId, res) => {
 export const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    const normalizedUsername = typeof username === "string" ? username.trim() : "";
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
-    if (!username || !email || !password) {
+    if (!normalizedUsername || !normalizedEmail || typeof password !== "string" || !password) {
       return res.status(400).json({
         success: false,
         message: "All fields are required"
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    if (typeof password !== "string" || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters"
+      });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, { username: normalizedUsername }]
+    });
 
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: "User already exists"
+        message: "Username or email is already in use"
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await User.create({
-      username,
-      email,
+      username: normalizedUsername,
+      email: normalizedEmail,
       password: hashedPassword
     });
 
@@ -59,8 +70,14 @@ export const registerUser = async (req, res) => {
       }
     });
 
-  } catch (ernameror) {
+  } catch (error) {
     console.error("Register error:", error);
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "Username or email is already in use"
+      });
+    }
     return res.status(500).json({
       success: false,
       message: "Server error during registration"
@@ -72,15 +89,16 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
-    if (!email || !password) {
+    if (!normalizedEmail || typeof password !== "string" || !password) {
       return res.status(400).json({
         success: false,
         message: "Email and password are required"
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return res.status(401).json({

@@ -1,11 +1,13 @@
 import "./Sidebar.css";
 import { useContext, useEffect, useState } from "react";
 import { MyContext } from "./Mycontext";
-import {v1 as uuidv1} from "uuid";
-
+import { v1 as uuidv1 } from "uuid";
+import api from "./api/axios";
+import { useAuth } from "./context/useAuth";
 
 function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { user } = useAuth();
   const { allThreads = [], 
     setAllThreads, 
     currThreadId, 
@@ -23,12 +25,10 @@ function Sidebar() {
 
     const getAllThreads = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/thread");
-        if (!response.ok) throw new Error("Failed to fetch threads");
-
-        const threads = await response.json();
-        if (!cancelled) setAllThreads(threads);
+        const response = await api.get("/thread");
+        if (!cancelled) setAllThreads(response.data);
       } catch (error) {
+        if (error.response?.status === 401) return;
         console.error("Failed to load chat history:", error);
       }
     };
@@ -57,18 +57,16 @@ function Sidebar() {
   }
 
   const changeThread = async (newThreadId) =>{
-    setCurrThreadId(newThreadId);
-
     try{
-     const response = await fetch(`http://localhost:8080/api/thread/${newThreadId}`);
-     const res = await response.json();
-     console.log(res);
+     const response = await api.get(`/thread/${encodeURIComponent(newThreadId)}`);
+     const res = response.data;
+     setCurrThreadId(newThreadId);
      setPrevChat(Array.isArray(res?.messages) ? res.messages : []);
      setNewChat(false);
      setReply(null);
 
     } catch(err){
-      console.error(err);
+      console.error("Failed to open conversation:", err);
 
     }
 
@@ -77,13 +75,7 @@ function Sidebar() {
 
   const deleteThread = async(threadId) =>{
     try{
-      const response = await fetch(`http://localhost:8080/api/thread/${threadId}`, {
-        method:"DELETE",
-      });
-
-      const res= await response.json();
-      console.log(res);
-
+      await api.delete(`/thread/${encodeURIComponent(threadId)}`);
 
       // updates the allthreads
       setAllThreads((threads) => threads.filter((thread) => thread.threadId !== threadId));
@@ -97,7 +89,7 @@ function Sidebar() {
         
       }
     } catch(err){
-      console.error(err);
+      console.error("Failed to delete conversation:", err);
     }
   }
 
@@ -159,9 +151,10 @@ function Sidebar() {
       </nav>
 
       <footer className="sidebarFooter">
-        <span className="profileMark" aria-hidden="true">N</span>
-        <span className="profileName">By Nir</span>
-        <i className="fa-solid fa-ellipsis" aria-hidden="true" />
+        <span className="profileMark" aria-hidden="true">
+          {(user?.username || user?.email || "U").charAt(0).toUpperCase()}
+        </span>
+        <span className="profileName">{user?.username || user?.email}</span>
       </footer>
     </aside>
   );

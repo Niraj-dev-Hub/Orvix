@@ -2,18 +2,44 @@ import "./ChatWindow.css";
 import Chat from "./Chat";
 import { MyContext } from "./Mycontext";
 import { useContext, useState } from "react";
+import api from "./api/axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/useAuth";
+import { v1 as uuidv1 } from "uuid";
 
 function ChatWindow() {
   const {
     prompt,
     setPrompt,
     currThreadId,
+    setCurrThreadId,
+    setNewChat,
     setPrevChat,
     setAllThreads,
     setReply,
   } = useContext(MyContext);
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // change afterwards
+  const [isOpen, setIsOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    setLogoutError("");
+    try {
+      await logout();
+      setAllThreads([]);
+      setPrevChat([]);
+      setPrompt("");
+      setReply(null);
+      setCurrThreadId(uuidv1());
+      setNewChat(true);
+      navigate("/auth", { replace: true });
+    } catch (error) {
+      console.error("Failed to log out:", error);
+      setLogoutError("Unable to log out. Please try again.");
+    }
+  };
 
   const getReply = async () => {
     const message = prompt.trim();
@@ -28,13 +54,8 @@ function ChatWindow() {
     ]);
 
     try {
-      const response = await fetch("http://localhost:8080/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, threadId: currThreadId }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Request failed");
+      const response = await api.post("/chat", { message, threadId: currThreadId });
+      const result = response.data;
       setReply(result.reply);
       setPrevChat((messages) => [
         ...messages,
@@ -57,7 +78,7 @@ function ChatWindow() {
         ];
       });
     } catch (err) {
-      console.error(err);
+      console.error("Failed to send chat message:", err);
       setPrevChat((messages) => [
         ...messages,
         {
@@ -77,21 +98,31 @@ function ChatWindow() {
           Orvix
           <i className="fa-solid fa-chevron-down"></i>
         </span>
-        <div className="userIconDiv" onClick= {() => setIsOpen(!isOpen)}>
+        <button
+          className="userIconDiv"
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Account menu"
+          aria-expanded={isOpen}
+        >
           <span className="userIcon">
             {" "}
             <i className="fa-solid fa-user"></i>{" "}
           </span>
-        </div>
+        </button>
       </div>
 
       {isOpen && (
         <div className="dropDownDiv">
           <div className="dropDownItems"> <i className="fa-solid fa-crown"></i> Upgrade Plan</div>
           <div className="dropDownItems"><i className="fa-solid fa-gear"></i>Settings</div>
-          <div className="dropDownItems"><i className="fa-solid fa-right-from-bracket"></i>Log out</div>
+          <button className="dropDownItems" type="button" onClick={handleLogout}>
+            <i className="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+            Log out
+          </button>
         </div>
       )}
+      {logoutError && <p className="chatError" role="alert">{logoutError}</p>}
 
       <Chat loading={loading} />
 
