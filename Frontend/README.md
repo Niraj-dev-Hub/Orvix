@@ -12,8 +12,8 @@
    npm run dev
    ```
 
-2. Configure the frontend API URL if needed (the default is
-   `http://localhost:8080/api`), then start Vite:
+2. Set `VITE_API_URL=http://localhost:8080/api` in `Frontend/.env` to use the
+   local backend, then start Vite:
 
    ```sh
    cd Frontend
@@ -39,13 +39,14 @@ Configure these backend environment variables in the hosting service:
 - `JWT_SECRET`: a private random value of at least 32 characters.
 - `GEMINI_API_KEY`: a valid Google Gemini API key.
 - `NODE_ENV=production`
-- `CLIENT_URL`: the exact HTTPS origin serving the frontend, without a path.
+- `CLIENT_URL`: `https://orvix-sigma.vercel.app` (the exact HTTPS frontend
+  origin, without a trailing slash or path).
 - `PORT`: set this only if the host does not provide it automatically.
 
-Configure `VITE_API_URL` in the frontend build environment to the public API
-base URL, including `/api` (for example, `https://api.example.com/api`). Vite
-embeds this value at build time, so rebuild after changing it. Publish the
-contents of `Frontend/dist` after running:
+Set `VITE_API_URL=https://orvix-s014.onrender.com/api` in the frontend build
+environment. This is also the default API URL in the frontend source and
+`.env.example`. Vite embeds this value at build time, so rebuild after changing
+it. Publish the contents of `Frontend/dist` after running:
 
 ```sh
 cd Frontend
