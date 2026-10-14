@@ -46,9 +46,10 @@ The Vercel project uses `Frontend` as its root directory, with build command
 and authentication cookies use the Vercel site origin instead of relying on
 cross-site cookies.
 
-Set the Vercel environment variable `VITE_API_URL` to `/api` in all deployment
-environments. This value is embedded at build time; redeploy after changing it.
-The frontend source and `.env.example` also default to `/api`.
+The frontend always sends API requests to the same-origin `/api` path, which
+Vercel proxies to Render. Do not configure a separate API URL; keeping requests
+same-origin allows authentication cookies to work in browsers that restrict
+cross-site cookies.
 
 Install and test the backend with:
 
