@@ -20,7 +20,9 @@ function ChatWindow({ onOpenSidebar }) {
   } = useContext(MyContext);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [provider, setProvider] = useState("gemini");
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -54,7 +56,11 @@ function ChatWindow({ onOpenSidebar }) {
     ]);
 
     try {
-      const response = await api.post("/chat", { message, threadId: currThreadId });
+      const response = await api.post("/chat", {
+        message,
+        threadId: currThreadId,
+        provider,
+      });
       const result = response.data;
       setReply(result.reply);
       setPrevChat((messages) => [
@@ -95,6 +101,10 @@ function ChatWindow({ onOpenSidebar }) {
         errorMessage = "Your session may have expired. Please sign in again.";
       } else if (status === 429) {
         errorMessage = "The AI service is busy or its quota is exhausted. Please try again later.";
+      } else if (status === 503) {
+        errorMessage = "The AI service is temporarily overloaded. Please try again in a moment.";
+      } else if (status === 502) {
+        errorMessage = `The selected AI provider failed. Please try again${requestId ? ` (request ${requestId})` : ""}.`;
       } else if (status >= 500) {
         errorMessage = `The chat service failed (${status}). Check the backend logs${requestId ? ` for request ${requestId}` : ""}.`;
       } else {
@@ -173,14 +183,64 @@ function ChatWindow({ onOpenSidebar }) {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={loading}
           />
-          <button
-            className="sendButton"
-            type="submit"
-            disabled={!prompt.trim() || loading}
-            aria-label="Send message"
-          >
-            <span className="sendArrow" aria-hidden="true" />
-          </button>
+          <div className="composerToolbar">
+            {isModelMenuOpen && (
+              <div className="modelMenu" role="group" aria-label="Choose AI model">
+                <span className="modelMenuHeading">Choose a model</span>
+                <button
+                  className={`modelMenuOption${provider === "gemini" ? " isSelected" : ""}`}
+                  type="button"
+                  onClick={() => {
+                    setProvider("gemini");
+                    setIsModelMenuOpen(false);
+                  }}
+                  aria-pressed={provider === "gemini"}
+                >
+                  <span className="modelOptionDot geminiDot" aria-hidden="true" />
+                  <span>Gemini</span>
+                  {provider === "gemini" && <i className="fa-solid fa-check" aria-hidden="true" />}
+                </button>
+                <button
+                  className={`modelMenuOption${provider === "groq" ? " isSelected" : ""}`}
+                  type="button"
+                  onClick={() => {
+                    setProvider("groq");
+                    setIsModelMenuOpen(false);
+                  }}
+                  aria-pressed={provider === "groq"}
+                >
+                  <span className="modelOptionDot groqDot" aria-hidden="true" />
+                  <span>Groq</span>
+                  {provider === "groq" && <i className="fa-solid fa-check" aria-hidden="true" />}
+                </button>
+              </div>
+            )}
+            <div className="composerActions">
+              <button
+                className={`modelIconButton${isModelMenuOpen ? " isOpen" : ""}`}
+                type="button"
+                onClick={() => setIsModelMenuOpen((open) => !open)}
+                disabled={loading}
+                aria-label={`Select AI model, currently ${provider === "gemini" ? "Gemini" : "Groq"}`}
+                aria-expanded={isModelMenuOpen}
+                title={`Model: ${provider === "gemini" ? "Gemini" : "Groq"}`}
+              >
+                <i
+                  className={`fa-solid ${provider === "gemini" ? "fa-wand-magic-sparkles" : "fa-bolt"}`}
+                  aria-hidden="true"
+                />
+                <span className={`modelIconDot ${provider === "gemini" ? "geminiDot" : "groqDot"}`} />
+              </button>
+              <button
+                className="sendButton"
+                type="submit"
+                disabled={!prompt.trim() || loading}
+                aria-label="Send message"
+              >
+                <span className="sendArrow" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <p className="info">

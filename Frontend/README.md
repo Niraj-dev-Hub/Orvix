@@ -35,6 +35,9 @@ Configure these backend environment variables in Render:
   the database network access rules.
 - `JWT_SECRET`: a private random value of at least 32 characters.
 - `GEMINI_API_KEY`: a valid Google Gemini API key.
+- `GROQ_API_KEY`: a valid Groq API key.
+- `GEMINI_MODEL` (optional): Gemini model name; defaults to `gemini-3.1-flash-lite`.
+- `GROQ_MODEL` (optional): Groq model name; defaults to `openai/gpt-oss-20b`.
 - `NODE_ENV=production`
 - `CLIENT_URL`: `https://orvix-sigma.vercel.app` (the exact HTTPS frontend
   origin, without a trailing slash or path).
@@ -67,3 +70,6 @@ unavailable. Use HTTPS for both services.
 
 Conversation history is private to the signed-in account, and the account
 menu's **Log out** action clears the session cookie.
+
+Choose **Gemini** or **Groq** from the model selector below the message box;
+provider API keys stay on the backend and are never sent to the browser.

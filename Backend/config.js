@@ -1,5 +1,10 @@
 export function validateEnvironment(env = process.env) {
-  const requiredValues = ["MONGO_URI", "JWT_SECRET", "GEMINI_API_KEY"];
+  const requiredValues = [
+    "MONGO_URI",
+    "JWT_SECRET",
+    "GEMINI_API_KEY",
+    "GROQ_API_KEY"
+  ];
   const missingValues = requiredValues.filter((key) => !env[key]?.trim());
 
   if (missingValues.length > 0) {

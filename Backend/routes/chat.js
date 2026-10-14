@@ -1,6 +1,6 @@
 import express from "express";
 import Thread from "../models/Thread.js";
-import getGeminiAiResponse from "../utils/Gemini.js";
+import { chatProviders, getChatResponse } from "../utils/chatModels.js";
 import { protectRoute } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -53,11 +53,14 @@ router.delete("/thread/:threadId", protectRoute, async (req, res) => {
 });
 
 router.post("/chat", protectRoute, async (req, res) => {
-  const { threadId, message } = req.body;
+  const { threadId, message, provider = "gemini" } = req.body;
 
   if (typeof threadId !== "string" || !threadId.trim() ||
       typeof message !== "string" || !message.trim()) {
     return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (!chatProviders.includes(provider)) {
+    return res.status(400).json({ error: "Unsupported chat provider" });
   }
 
   let failureStage = "load_thread";
@@ -86,7 +89,7 @@ router.post("/chat", protectRoute, async (req, res) => {
     }
 
     failureStage = "generate_reply";
-    const assistantReply = await getGeminiAiResponse(trimmedMessage);
+    const assistantReply = await getChatResponse(provider, trimmedMessage);
     thread.messages.push({ role: "assistant", content: assistantReply });
     thread.updatedAt = new Date();
 
@@ -95,16 +98,27 @@ router.post("/chat", protectRoute, async (req, res) => {
 
     return res.json({ reply: assistantReply });
   } catch (err) {
+    const status = Number(err.status);
     console.error("Chat request failed:", {
       requestId: req.requestId,
       stage: failureStage,
+      provider,
       name: err.name,
       message: err.message,
       status: err.status,
       code: err.code
     });
-    return res.status(500).json({
-      error: "Chat request failed",
+    const responseStatus = failureStage !== "generate_reply"
+      ? 500
+      : status === 429 || status === 503
+        ? status
+        : 502;
+    return res.status(responseStatus).json({
+      error: responseStatus === 429
+        ? "AI service rate limit reached"
+        : responseStatus === 503
+          ? "AI service temporarily unavailable"
+          : "AI provider request failed",
       requestId: req.requestId
     });
   }

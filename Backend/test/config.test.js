@@ -6,6 +6,7 @@ const validEnvironment = {
   MONGO_URI: "mongodb://localhost/orvix",
   JWT_SECRET: "a".repeat(32),
   GEMINI_API_KEY: "test-api-key",
+  GROQ_API_KEY: "test-groq-api-key",
   NODE_ENV: "development"
 };
 
@@ -17,6 +18,10 @@ test("reports missing required variables", () => {
   assert.throws(
     () => validateEnvironment({ ...validEnvironment, GEMINI_API_KEY: "" }),
     /GEMINI_API_KEY/
+  );
+  assert.throws(
+    () => validateEnvironment({ ...validEnvironment, GROQ_API_KEY: "" }),
+    /GROQ_API_KEY/
   );
 });
 
